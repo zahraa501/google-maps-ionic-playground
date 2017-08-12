@@ -40,9 +40,18 @@ angular.module('starter', ['ionic', 'ngCordova'])
  var options = {timeout: 10000, enableHighAccuracy: true};
  
   $cordovaGeolocation.getCurrentPosition(options).then(function(position){
- 
+    var self = this;
     var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
- 
+    var infoWindow = new google.maps.InfoWindow;
+    var geocoder = new google.maps.Geocoder().geocode({'location': latLng}, function(results, status) {
+        if(status === "OK") {
+           if (results[0]) {
+              infoWindow.setContent(results[0].formatted_address);
+           } 
+        } else {
+          infoWindow.setContent('An error occured.');
+        }
+    });
     var mapOptions = {
       center: latLng,
       zoom: 15,
@@ -50,8 +59,23 @@ angular.module('starter', ['ionic', 'ngCordova'])
     };
  
     $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+    //Wait until the map is loaded
+    google.maps.event.addListenerOnce($scope.map, 'idle', function(){
+     
+      var marker = new google.maps.Marker({
+          map: $scope.map,
+          animation: google.maps.Animation.DROP,
+          position: latLng
+      });      
+      
+      google.maps.event.addListener(marker, 'click', function () {
+          infoWindow.open($scope.map, marker);
+      });
+    });
  
   }, function(error){
     console.log("Could not get location");
   });
 });
+
