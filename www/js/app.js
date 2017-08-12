@@ -37,13 +37,52 @@ angular.module('starter', ['ionic', 'ngCordova'])
 })
 
 .controller('MapCtrl', function($scope, $state, $cordovaGeolocation) {
- var options = {timeout: 10000, enableHighAccuracy: true};
- 
+  var options = {timeout: 10000, enableHighAccuracy: true};
+  var markerLocation;
+  var geocoder = new google.maps.Geocoder;
+  var infoWindow = new google.maps.InfoWindow;
   $cordovaGeolocation.getCurrentPosition(options).then(function(position){
     var self = this;
-    var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-    var infoWindow = new google.maps.InfoWindow;
-    var geocoder = new google.maps.Geocoder().geocode({'location': latLng}, function(results, status) {
+    markerLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    setPositionInformation(markerLocation);
+    var mapOptions = {
+      center: markerLocation,
+      zoom: 15,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    //renders map
+    $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    google.maps.event.addListener($scope.map, 'idle', function(){
+      var marker = new google.maps.Marker({
+            map: $scope.map,
+            animation: google.maps.Animation.DROP,
+            position: markerLocation 
+        });      
+          google.maps.event.addListener(marker, 'click', function () {
+          infoWindow.open($scope.map, marker);
+      });
+    });
+  }, function(error){
+    console.log("Could not get location");
+  });
+
+  $scope.searchValue = "";
+  $scope.findLocation = function() {
+    geocoder.geocode({'address': $scope.searchValue}, function(results, status) {
+        if(status === "OK") {
+           if (results[0]) {
+              resetPosition(results[0].geometry.location);
+              setMarker(results[0].geometry.location);
+              infoWindow.setContent(results[0].formatted_address);
+           } 
+        } else {
+          infoWindow.setContent('An error occured.');
+        }
+    });
+  };
+
+  var setPositionInformation = function(location) {
+    geocoder.geocode({'location': location}, function(results, status) {
         if(status === "OK") {
            if (results[0]) {
               infoWindow.setContent(results[0].formatted_address);
@@ -52,30 +91,12 @@ angular.module('starter', ['ionic', 'ngCordova'])
           infoWindow.setContent('An error occured.');
         }
     });
-    var mapOptions = {
-      center: latLng,
-      zoom: 15,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    };
- 
-    $scope.map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-    //Wait until the map is loaded
-    google.maps.event.addListenerOnce($scope.map, 'idle', function(){
-     
-      var marker = new google.maps.Marker({
-          map: $scope.map,
-          animation: google.maps.Animation.DROP,
-          position: latLng
-      });      
-      
-      google.maps.event.addListener(marker, 'click', function () {
-          infoWindow.open($scope.map, marker);
-      });
-    });
- 
-  }, function(error){
-    console.log("Could not get location");
-  });
+  };
+  var resetPosition = function(location) {
+    $scope.map.setCenter(location);
+  };
+  var setMarker = function(location) {
+    markerLocation = location;
+  }
 });
 

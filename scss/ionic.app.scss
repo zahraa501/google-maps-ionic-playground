@@ -29,3 +29,15 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
     width: 100%;
     height: 100%;
 }
+.list.list-inset {
+    width: 100%;
+}
+label.item.item-input {
+    height: 100%;
+}
+.list-inset {
+	margin: 0px 10px;
+}
+form.ng-valid {
+    height: 100%;
+}
