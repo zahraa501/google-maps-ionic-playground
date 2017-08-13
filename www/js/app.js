@@ -75,9 +75,7 @@ angular.module('starter', ['ionic', 'ngCordova'])
               setMarker(results[0].geometry.location);
               infoWindow.setContent(results[0].formatted_address);
            } 
-        } else {
-          infoWindow.setContent('An error occured.');
-        }
+        } 
     });
   };
 
@@ -87,9 +85,7 @@ angular.module('starter', ['ionic', 'ngCordova'])
            if (results[0]) {
               infoWindow.setContent(results[0].formatted_address);
            } 
-        } else {
-          infoWindow.setContent('An error occured.');
-        }
+        } 
     });
   };
   var resetPosition = function(location) {
